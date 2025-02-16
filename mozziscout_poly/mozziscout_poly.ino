@@ -143,5 +143,5 @@ AudioOutput_t updateAudio() {
     //    asig += myOscs[i].next();
     asig += myOscs[i].next() * myEnvs[i].next();
   }
-  return MonoOutput::fromAlmostNBit(20, asig);
+  return MonoOutput::fromAlmostNBit(19, asig);
 }
