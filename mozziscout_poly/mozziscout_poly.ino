@@ -1,13 +1,12 @@
 /**
-   MozziScout polysynth
-   Can't play held chords because no diodes on Scout key matrix,
-   but if you play a fast arpeggio, a chord will sound
+   MozziScout2 is just like normal Scout2, except we generate _all_ of the tones on pin 9 (OCR1A).
 
-   MozziScout is just like normal Scout,
-   but pins 9 & 11 are swapped, so we can use Mozzi
-
-    @todbot 12 Dec 2021
+   Originally by @todbot 12 Dec 2021
+   Modified by @shamlian in 2025
 */
+
+//TODO: Get analog reads back. Can I configure Mozzi to only use certain analog inputs? A0, A1, and A2 are in the key matrix.
+#define MOZZI_ANALOG_READ MOZZI_ANALOG_READ_NONE
 
 #include <MozziGuts.h>
 #include <Oscil.h> // oscillator template
@@ -17,25 +16,28 @@
 #include <Keypad.h>
 
 // SETTINGS
-int octave = 3;
+#define BASE_OCTAVE 3
+#define NUM_VOICES 6
 
-const byte ROWS = 4;
+const int OCTAVE_PIN = A4;
+const int GLIDE_PIN = A5;
+
+const byte ROWS = 5;
 const byte COLS = 5;
-byte key_indexes[ROWS][COLS] = { // note this goes from 1-17, 0 is undefined
-  {1, 5, 9, 12, 15},
-  {2, 6, 10, 13, 16},
-  {3, 7, 11, 14, 17},
-  {4, 8}
-};
-byte rowPins[ROWS] = {7, 8, 11, 10}; // MozziScout: note pin 11 instead on 9 here
+byte key_indexes[ROWS][COLS] = {{1, 6, 11, 16, 21},
+                                {2, 7, 12, 17, 22},
+                                {3, 8, 13, 18, 23},
+                                {4, 9, 14, 19, 24},
+                                {5, 10, 15, 20, 25}};
+byte rowPins[ROWS] = {7, 8, 14, 15, 16};
 byte colPins[COLS] = {2, 3, 4, 5, 6};
 
 Keypad keys = Keypad(makeKeymap(key_indexes), rowPins, colPins, ROWS, COLS);
 
-#define NUM_VOICES 5
 #define CONTROL_RATE 64
 
 Oscil<SMOOTHSQUARE8192_NUM_CELLS, AUDIO_RATE> myOscs[ NUM_VOICES ] = {
+  Oscil<SMOOTHSQUARE8192_NUM_CELLS, AUDIO_RATE>(SMOOTHSQUARE8192_DATA),
   Oscil<SMOOTHSQUARE8192_NUM_CELLS, AUDIO_RATE>(SMOOTHSQUARE8192_DATA),
   Oscil<SMOOTHSQUARE8192_NUM_CELLS, AUDIO_RATE>(SMOOTHSQUARE8192_DATA),
   Oscil<SMOOTHSQUARE8192_NUM_CELLS, AUDIO_RATE>(SMOOTHSQUARE8192_DATA),
@@ -82,7 +84,7 @@ void updateControl() {
   if (keys.getKeys()) {
     for (int i = 0; i < LIST_MAX; i++) {   // Scan the whole key list.
       if ( keys.key[i].stateChanged ) {  // Only find keys that have changed state.
-        byte note = 60 + (octave * 12) - 36 + keys.key[i].kchar;
+        byte note = 60 + (BASE_OCTAVE * 12) - 36 + keys.key[i].kchar;
 
         switch (keys.key[i].kstate) {  // Report active key state : IDLE, PRESSED, HOLD, or RELEASED
           case PRESSED:
