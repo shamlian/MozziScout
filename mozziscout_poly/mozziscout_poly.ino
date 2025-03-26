@@ -84,7 +84,7 @@ void updateControl() {
   if (keys.getKeys()) {
     for (int i = 0; i < LIST_MAX; i++) {   // Scan the whole key list.
       if ( keys.key[i].stateChanged ) {  // Only find keys that have changed state.
-        byte note = 60 + (BASE_OCTAVE * 12) - 36 + keys.key[i].kchar;
+        byte note = 59 + (BASE_OCTAVE * 12) - 36 + keys.key[i].kchar;
 
         switch (keys.key[i].kstate) {  // Report active key state : IDLE, PRESSED, HOLD, or RELEASED
           case PRESSED:
